@@ -16,8 +16,13 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
       # Runs a single command using the runners shell
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+         path: ~/.m2
+         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+         restore-keys: ${{ runner.os }}-m2
       - name: Maven Build
         run: mvn package -Dmdep.skip
       - name: Upload to release
