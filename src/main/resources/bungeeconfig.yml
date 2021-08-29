@@ -1,0 +1,81 @@
+#################################
+########## AdiAuth ##############
+############### -by ad1tya2 #####
+
+#dont touch
+configversion: 1
+
+#storage
+#Only mysql available right now
+#mysql
+mysql:
+  username: username
+  password: passmyword
+  database: datatomybasetothebase
+  host: localhost
+
+# If the name of a cracked account becomes premium, it converts the account as well
+# The uuid will remain cracked when checked inside the server
+# But the player will be automatically logged in as cracked
+# There is a risk factor ofcourse, But the chances are that this only happens when a person with a cracked account buys a new premium account
+# It is less likely that a person buys an account with the same username as a cracked guy
+convertOldCrackedToPremium: true
+
+#The tme to keep a player logged in for in Minutes
+#So that they don't have to login everytime they reconnect
+#Note that the session will be reset when they join from a new ip
+sessionTime: 120
+
+
+#The servers where they will be teleported to login
+authServers:
+  - hub
+
+#The servers where players will be sent to after logging in
+lobbyServers:
+  - hub
+
+#The url of a backup server to use, Contact me on my discord if you wish to use it
+#Note: I dont give backup server for free xD
+backupServer: false
+
+#Use the backup server always
+forceBackupServer: false
+
+#Give darkness effect to players who haven't logged in
+#If you want to reload this then you will need to reload this on bungee and restart the backend spigot server
+blindness: true
+
+#Prevent players who haven't logged in from moving
+#If you want to reload this then you will need to reload this on bungee and restart the backend spigot server
+freezePlayers: true
+
+#The interval in seconds to check if a server is online or not
+serverCheckInterval: 10
+
+#Commands that can be executed without being logged in
+whitelistedCommands:
+  - /register
+  - /reg
+  - /login
+  - /l
+
+
+messages:
+  registerMessage: '&bWelcome!, Please register to play, /register <password>'
+  loginMessage: '&bWelcome!, Please login to play, /login <password>'
+  registerTitle: '&2/register'
+  loginTitle: '&2/login'
+  registerError: '&cInvalid Format!, Please use /register <password>'
+  alreadyRegistered: '&cYou have already registered, please use /changepass <oldpassword> <newpassword> if you want to change your pass'
+  loginAndRegisterSuccess: '&bWelcome to adiauth Have fun!'
+  loginAndRegisterSuccessTitle: '&2&bWelcome!'
+  alreadyLoggedIn: '&eYou are already logged in!, You dont need to use this :)'
+  loginError: '&cInvalid Format!, Please use /login <password>'
+  loginNotRegistered: '&cPlease register first!'
+  loginWrongPass: '&eYou have used an incorrect password!'
+  noServersAvailable: '&cNo servers are currently available to connect you to, please come back later'
+  logoutMessage: '&2Successfully logged out!'\
+  changePassError: '&cInvalid Format!, &ePlease use /changepass <oldpass> <newpass>'
+  successfulChangePass: '&2&lPassword changed successfully!'
+  genericPremiumError: '&2You dont need to use this command :)'

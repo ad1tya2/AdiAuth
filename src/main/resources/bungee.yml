@@ -1,0 +1,12 @@
+name: AdiAuth
+author: ad1tya2
+version: '${project.version}'
+main: ad1tya2.adiauth.Bungee.AdiAuth
+description: 'An easy to use and open source auth plugin by ad1tya2 :)'
+permissions:
+  adiauth.player:
+    default: true
+    description: For logging in and registering
+  adiauth.admin:
+    default: false
+    description: For using admin commands

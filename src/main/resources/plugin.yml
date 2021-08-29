@@ -1,0 +1,4 @@
+main: ad1tya2.adiauth.Spigot.AdiAuthSpigot
+name: AdiAuth
+version: '${project.version}'
+author: ad1tya2
