@@ -3,7 +3,10 @@
 name: Release artifact
 
 # Controls when the workflow will run
-on: release
+on: 
+ release:
+  types: [published]
+ 
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -26,7 +29,7 @@ jobs:
       - name: Maven Build
         run: mvn package -Dmdep.skip
       - name: Upload to release
-        uses: JasonEtco/upload-to-release@master
+        uses: ad1tya2/upload-to-release@master
         with:
          args: target/AdiAuth*.jar
         env:
