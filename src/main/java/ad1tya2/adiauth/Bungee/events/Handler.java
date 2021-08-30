@@ -2,7 +2,6 @@ package ad1tya2.adiauth.Bungee.events;
 
 import ad1tya2.adiauth.Bungee.AdiAuth;
 import ad1tya2.adiauth.Bungee.Config;
-import ad1tya2.adiauth.Bungee.commands.login;
 import ad1tya2.adiauth.Bungee.data.servers;
 import ad1tya2.adiauth.Bungee.data.storage;
 import ad1tya2.adiauth.Bungee.utils.pluginMessaging;
@@ -20,6 +19,7 @@ import net.md_5.bungee.event.EventHandler;
 
 import java.lang.reflect.Field;
 
+import java.util.Optional;
 import java.util.logging.Level;
 
 public class Handler implements Listener {
@@ -34,14 +34,27 @@ public class Handler implements Listener {
                              @Override
                              public void run() {
                                  PendingConnection conn = event.getConnection();
-                                 UserProfile profile = storage.getPlayerForLogin(conn.getName(), tools.getIp(conn.getSocketAddress()));
-                                 if(profile == null){
+                                 Optional<UserProfile> optional = storage.getPlayerForLogin(conn.getName(), tools.getIp(conn.getSocketAddress()));
+                                 if(optional == null){
+                                     event.setCancelReason(Config.Messages.tooManyAccounts);
+                                     event.setCancelled(true);
+                                     return;
+                                 }
+                                 if(!optional.isPresent()){
                                      event.setCancelReason(tools.getColoured(
                                              "&cConnection has been cancelled due to internal server error."
                                      ));
                                      event.setCancelled(true);
                                      return;
                                  }
+                                 UserProfile profile = optional.get();
+                                 if(profile.isLoginBeingProcessed()){
+                                     event.setCancelReason(Config.secondAttempt);
+                                     event.setCancelled(true);
+                                     profile.loginProcessCompleted();
+                                     return;
+                                 }
+                                 profile.startLoginProcess();
                                  conn.setUniqueId(profile.uuid);
                                  conn.setOnlineMode(profile.isPremium());
                                  event.completeIntent(AdiAuth.instance);
@@ -54,7 +67,7 @@ public class Handler implements Listener {
     public void onLogin(LoginEvent event){
         try {
             InitialHandler handler = (InitialHandler) event.getConnection();
-            UserProfile profile = storage.getPlayerDirect(handler.getName());
+            UserProfile profile = storage.getPlayerMemory(handler.getName());
             Class handle = handler.getClass();
             Field uniqueId = handle.getDeclaredField("uniqueId");
             uniqueId.setAccessible(true);
@@ -65,12 +78,20 @@ public class Handler implements Listener {
         }
     }
 
+    @EventHandler(priority = 127)
+    public void postLogin(PostLoginEvent event){
+        UserProfile profile = storage.getPlayerMemory(event.getPlayer().getName());
+        if(profile != null){
+            profile.loginProcessCompleted();
+        }
+    }
+
 
 
     @EventHandler
     public void serverConnect(ServerConnectEvent event){
         ProxiedPlayer p = event.getPlayer();
-        UserProfile user = storage.getPlayerDirect(p.getName());
+        UserProfile user = storage.getPlayerMemory(p.getName());
         if(user.isLogged()){
             event.setTarget(servers.getHubServer());
         }
@@ -98,7 +119,7 @@ public class Handler implements Listener {
             return;
         }
         ProxiedPlayer p = (ProxiedPlayer) event.getSender();
-        UserProfile profile = storage.getPlayerDirect(p.getName());
+        UserProfile profile = storage.getPlayerMemory(p.getName());
         if(profile.isLogged()){
             return;
         }

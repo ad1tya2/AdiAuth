@@ -13,8 +13,9 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 
-import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,9 +24,51 @@ import java.util.logging.Level;
 import static ad1tya2.adiauth.Bungee.utils.Uuids.*;
 
 public class storage {
-    private static ConcurrentHashMap<String, UserProfile> pMap = new ConcurrentHashMap<String, UserProfile>();
-    private static ConcurrentHashMap<UUID, UserProfile> pMapByPremiumUuid = new ConcurrentHashMap<UUID, UserProfile>();
-
+    public enum AccountType {
+        TOTAL, CRACKED, PREMIUM
+    }
+    private static final ConcurrentHashMap<String, UserProfile> pMap = new ConcurrentHashMap<String, UserProfile>();
+    private static final ConcurrentHashMap<UUID, UserProfile> pMapByPremiumUuid = new ConcurrentHashMap<UUID, UserProfile>();
+    private static final ConcurrentHashMap<String, List<UserProfile>> profilesByIp = new ConcurrentHashMap<String, List<UserProfile>>();
+    public static Integer getAccounts(String ip, AccountType type){
+        List<UserProfile> profiles = profilesByIp.get(ip);
+        if(profiles == null){
+            return 0;
+        }
+        switch (type){
+            case TOTAL:
+                return profiles.size();
+            case CRACKED:
+                int accounts = 0;
+                for(UserProfile profile: profiles){
+                    if(!profile.isPremium()){
+                        accounts++;
+                    }
+                }
+                return accounts;
+            case PREMIUM:
+                int premiums = 0;
+                for(UserProfile profile: profiles){
+                    if(profile.isPremium()){
+                        premiums++;
+                    }
+                }
+                return premiums;
+            default:
+                return 0;
+        }
+    }
+    public static void addAccountToIpList(UserProfile profile){
+        if(profile.lastIp == null){
+            return;
+        }
+        List<UserProfile> profiles = profilesByIp.get(profile.lastIp);
+        if(profiles == null){
+            profiles = new ArrayList<UserProfile>();
+        }
+        profiles.add(profile);
+        profilesByIp.put(profile.lastIp, profiles);
+    }
     public static void load(){
         try {
             mysql.load();
@@ -48,7 +91,7 @@ public class storage {
                 } catch (Exception e){
                     user.premiumUuid = null;
                 }
-                addPlayerDirect(user);
+                updatePlayerMemory(user);
             }
             records.close();
             stmt.close();
@@ -62,7 +105,10 @@ public class storage {
         tools.log(Level.SEVERE, "&cMojang api and/or Backup server is not responding, Please check, &eWill login the player using the last updated data");
     }
 
-    public static UserProfile getPlayerForLogin(String name, String ip){
+    public static Optional<UserProfile> getPlayerForLogin(String name, String ip){
+        if(getAccounts(ip, AccountType.TOTAL)>Config.maxTotalAccounts){
+            return null;
+        }
                 UserProfile user = new UserProfile();
                 user.username = name;
                 user.lastIp = ip;
@@ -82,11 +128,14 @@ public class storage {
                 }
                 if(uuid == null){
                     logApiError();
-                    return oldUserByName;
+                    return Optional.of(oldUserByName);
                 }
 
                     //Premium
                     if(uuid.isPresent()) {
+                        if(getAccounts(ip, AccountType.PREMIUM)>Config.maxPremiumAccounts){
+                            return null;
+                        }
                         user.premiumUuid = uuid.get();
                         user.uuid = user.premiumUuid;
                         UserProfile oldPremiumUser = pMapByPremiumUuid.get(user.premiumUuid);
@@ -97,34 +146,37 @@ public class storage {
                                     oldUserByName.premiumUuid = user.premiumUuid;
                                 }
                                 updatePlayer(oldUserByName);
-                                return oldUserByName;
+                                return Optional.of(oldUserByName);
                             }
                             updatePlayer(user);
-                            return user;
+                            return Optional.of(user);
                         } else if (oldPremiumUser.username != user.username) {
                             //Username change event
                             oldPremiumUser.username = user.username;
                             oldPremiumUser.lastIp = ip;
                             updatePlayer(oldPremiumUser);
-                            return oldPremiumUser;
+                            return Optional.of(oldPremiumUser);
                         } else {
                             if (oldPremiumUser.lastIp != ip) {
                                 oldPremiumUser.lastIp = ip;
                                 updatePlayer(oldPremiumUser);
                             }
-                            return oldPremiumUser;
+                            return Optional.of(oldPremiumUser);
                         }
                     }
 
                     //Cracked
                     else {
+                        if(getAccounts(ip, AccountType.CRACKED)>Config.maxCrackedAccounts){
+                            return null;
+                        }
                         user.uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8));
                         user.premiumUuid = null;
 
                         if (oldUserByName == null) {
                             updatePlayer(user);
 
-                            return user;
+                            return Optional.of(user);
                         }
 
                         //If the username of this player has been converted to cracked from premium
@@ -148,11 +200,11 @@ public class storage {
                         if (!oldUserByName.lastIp.equals(user.lastIp)) {
                             user.endSession();
                         }
-                        return user;
+                        return Optional.of(user);
                     }
     }
 
-    public static UserProfile getPlayerDirect(String name){
+    public static UserProfile getPlayerMemory(String name){
         return pMap.get(name);
     }
 
@@ -181,15 +233,16 @@ public class storage {
     }
 
     public static void updatePlayer(UserProfile player){
-        addPlayerDirect(player);
+        updatePlayerMemory(player);
         asyncUserProfileUpdate(player);
     }
 
-    private static void addPlayerDirect(UserProfile profile){
+    private static void updatePlayerMemory(UserProfile profile){
         pMap.put(profile.username, profile);
         if(profile.premiumUuid != null) {
             pMapByPremiumUuid.put(profile.premiumUuid, profile);
         }
+        addAccountToIpList(profile);
     }
 
 

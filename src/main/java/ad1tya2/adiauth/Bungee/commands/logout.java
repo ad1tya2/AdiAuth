@@ -19,7 +19,7 @@ public class logout extends Command {
             return;
         }
         ProxiedPlayer p = (ProxiedPlayer) sender;
-        UserProfile profile = storage.getPlayerDirect(p.getName());
+        UserProfile profile = storage.getPlayerMemory(p.getName());
         profile.endSession();
         p.disconnect(Config.Messages.logoutMessage);
     }

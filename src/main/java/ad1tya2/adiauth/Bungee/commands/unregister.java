@@ -18,7 +18,7 @@ public class unregister extends Command {
             return;
         }
         String username = args[0];
-        UserProfile profile = storage.getPlayerDirect(username);
+        UserProfile profile = storage.getPlayerMemory(username);
         if(profile == null){
             sender.sendMessage("&ePlayer dosent exist");
         } else {

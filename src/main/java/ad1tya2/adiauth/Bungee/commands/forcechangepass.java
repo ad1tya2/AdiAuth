@@ -6,8 +6,6 @@ import ad1tya2.adiauth.Bungee.utils.tools;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
 
-import javax.swing.*;
-
 public class forcechangepass extends Command {
     public forcechangepass() {
         super("forcechangepass", "adiauth.admin", "adminchangepass");
@@ -21,7 +19,7 @@ public class forcechangepass extends Command {
         }
         String username = args[0];
         String newPass = args[1];
-        UserProfile profile = storage.getPlayerDirect(username);
+        UserProfile profile = storage.getPlayerMemory(username);
         if(profile == null){
             sender.sendMessage("&ePlayer dosent exist");
         } else {

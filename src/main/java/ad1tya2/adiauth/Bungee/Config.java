@@ -24,13 +24,15 @@ public class Config {
     public static List<String> whitelistedCommands;
 
     public static String pluginMsgConf;
-    public static int serverCheckInterval = 30;
-    public static String backupServer;
-    public static boolean forceBackupServer, convertOldCrackedToPremium, backupServerEnabled;
+    public static int serverCheckInterval = 30,
+            maxPremiumAccounts, maxCrackedAccounts, maxTotalAccounts;
+    public static String backupServer, secondAttempt;
+    public static boolean forceBackupServer, convertOldCrackedToPremium, backupServerEnabled, secondAttemptEnabled;
     public static class Messages {
         public static String registerError, loginAndRegisterSuccess, alreadyLoggedIn, loginNotRegistered,
                 loginWrongPass, loginError, alreadyRegistered, noServersAvailable, registerMessage,
-                loginMessage, logoutMessage, changePassError, genericPremiumError, successfulChangePass;
+                loginMessage, logoutMessage, changePassError, genericPremiumError, successfulChangePass,
+                tooManyAccounts;
         public static Title loginAndRegisterSuccessTitle, registerTitle, loginTitle;
     }
     public  enum MYSQL {
@@ -87,6 +89,12 @@ public class Config {
             backupServer = config.getString("forceBackupServer");
             backupServerEnabled = !backupServer.equals("");
             convertOldCrackedToPremium = config.getBoolean("convertOldCrackedToPremium");
+            maxPremiumAccounts = config.getInt("maxPremiumAccounts");
+            maxCrackedAccounts = config.getInt("maxCrackedAccounts");
+            maxTotalAccounts = config.getInt("maxTotalAccounts");
+            Messages.tooManyAccounts = getMsgString("tooManyAccounts");
+            secondAttempt = tools.getColoured(config.getString("secondAttempt"));
+            Config.secondAttemptEnabled = !secondAttempt.equals("");
 
         }
          catch (Exception e){

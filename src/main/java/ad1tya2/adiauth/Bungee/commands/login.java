@@ -13,9 +13,6 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.plugin.Command;
 
-
-import java.nio.charset.StandardCharsets;
-
 public class login extends Command {
     public login() {
         super("login", null, "l");
@@ -28,7 +25,7 @@ public class login extends Command {
             return;
         }
         ProxiedPlayer p = (ProxiedPlayer) sender;
-        UserProfile profile = storage.getPlayerDirect(p.getName());
+        UserProfile profile = storage.getPlayerMemory(p.getName());
         String pass = tools.getSha256(args[0]);
         if(profile.isLogged()){
             sender.sendMessage(Config.Messages.alreadyLoggedIn);

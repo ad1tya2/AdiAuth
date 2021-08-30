@@ -9,6 +9,7 @@ public class UserProfile {
     public  String password;
     public  String lastIp;
     public long sessionEnd = 1L;
+    boolean loggingIn = false;
     public boolean isPremium(){
         return premiumUuid != null;
     }
@@ -28,6 +29,18 @@ public class UserProfile {
 
     public boolean isRegistered(){
         return password != null;
+    }
+
+    public void startLoginProcess(){
+        loggingIn = true;
+    }
+
+    public boolean isLoginBeingProcessed(){
+        return loggingIn;
+    }
+
+    public void loginProcessCompleted(){
+        loggingIn = false;
     }
 
 

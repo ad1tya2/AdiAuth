@@ -60,6 +60,23 @@ whitelistedCommands:
   - /login
   - /l
 
+#The maximum number of premium accounts that can join from a single ip
+maxPremiumAccounts: 3
+
+#The maximum number of cracked accounts that can be created by a single ip
+maxCrackedAccounts: 2
+
+#The maximum number of accounts that can be created in total by a single ip
+#If maxPremiumAccounts is 2
+# and maxCrackedAccounts is 2
+# But if maxTotalAccounts is 3
+# Then only the first 3 accounts will be allowed
+maxTotalAccounts: 3
+
+#The message to show when a cracked person with a premium name tries to login for the second time
+#Leave empty if you dont want this feature to be enabled
+secondAttempt: '&cPlease change your username to something uncommon, &ethis username is already taken by a premium player!'
+
 
 messages:
   registerMessage: '&bWelcome!, Please register to play, /register <password>'
@@ -79,3 +96,4 @@ messages:
   changePassError: '&cInvalid Format!, &ePlease use /changepass <oldpass> <newpass>'
   successfulChangePass: '&2&lPassword changed successfully!'
   genericPremiumError: '&2You dont need to use this command :)'
+  tooManyAccounts: '&cThere are too many accounts from this ip'

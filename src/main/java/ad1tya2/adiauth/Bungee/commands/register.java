@@ -25,7 +25,7 @@ public class register extends Command {
             return;
         }
         ProxiedPlayer p = (ProxiedPlayer) sender;
-        UserProfile profile = storage.getPlayerDirect(p.getName());
+        UserProfile profile = storage.getPlayerMemory(p.getName());
         String pass = tools.getSha256(args[0]);
         if(profile.isPremium()){
             sender.sendMessage(Config.Messages.alreadyRegistered);

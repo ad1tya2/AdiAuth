@@ -21,7 +21,7 @@ public class changepass extends Command {
             return;
         }
         ProxiedPlayer p = (ProxiedPlayer) sender;
-        UserProfile profile = storage.getPlayerDirect(p.getName());
+        UserProfile profile = storage.getPlayerMemory(p.getName());
         if(profile.isPremium()){
             p.sendMessage(Config.Messages.genericPremiumError);
         }
