@@ -1,12 +1,17 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Release artifact
+name: CI
 
 # Controls when the workflow will run
-on: 
- release:
-  types: [published, edited]
- 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -28,9 +33,8 @@ jobs:
          restore-keys: ${{ runner.os }}-m2
       - name: Maven Build
         run: mvn package -Dmdep.skip
-      - name: Upload to release
-        uses: ad1tya2/upload-to-release@master
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v2.2.4
         with:
-         args: target/AdiAuth*.jar
-        env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: AdiAuth
+          path: target/AdiAuth*.jar
