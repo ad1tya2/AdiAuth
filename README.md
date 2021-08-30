@@ -1,6 +1,6 @@
 # AdiAuth
 <br>
-![img](https://i.imgur.com/rOdztPb.png)
+![logo](adiauth.png)
 <br>
 <h2>A <b>free</b> hybrid auth plugin for bungeecord</h2>
 <br><br>
