@@ -1,5 +1,7 @@
 # AdiAuth
 <br>
+![img](https://i.imgur.com/rOdztPb.png)
+<br>
 <h2>A <b>free</b> hybrid auth plugin for bungeecord</h2>
 <br><br>
 It automatically logs in premium players, only cracked players need to login manually
