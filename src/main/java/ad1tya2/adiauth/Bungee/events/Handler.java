@@ -36,12 +36,12 @@ public class Handler implements Listener {
                                  PendingConnection conn = event.getConnection();
                                  Optional<UserProfile> optional = storage.getPlayerForLogin(conn.getName(), tools.getIp(conn.getSocketAddress()));
                                  if(optional == null){
-                                     event.setCancelReason(Config.Messages.tooManyAccounts);
+                                     conn.disconnect(Config.Messages.tooManyAccounts);
                                      event.setCancelled(true);
                                      return;
                                  }
                                  if(!optional.isPresent()){
-                                     event.setCancelReason(tools.getColoured(
+                                     conn.disconnect(tools.getColoured(
                                              "&cConnection has been cancelled due to internal server error."
                                      ));
                                      event.setCancelled(true);
@@ -49,7 +49,7 @@ public class Handler implements Listener {
                                  }
                                  UserProfile profile = optional.get();
                                  if(profile.isLoginBeingProcessed()){
-                                     event.setCancelReason(Config.secondAttempt);
+                                     conn.disconnect(Config.secondAttempt);
                                      event.setCancelled(true);
                                      profile.loginProcessCompleted();
                                      return;
@@ -81,9 +81,11 @@ public class Handler implements Listener {
     @EventHandler(priority = 127)
     public void postLogin(PostLoginEvent event){
         UserProfile profile = storage.getPlayerMemory(event.getPlayer().getName());
-        if(profile != null){
             profile.loginProcessCompleted();
-        }
+            if(profile.isPremium()) {
+                profile.fullJoined = true;
+            }
+            storage.updatePlayer(profile);
     }
 
 

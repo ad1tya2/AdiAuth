@@ -77,6 +77,6 @@ public class servers {
 
 
     public static boolean isOnline(ServerInfo server){
-        return serverMap.get(server.getName());
+        return serverMap.getOrDefault(server.getName(), true);
     }
 }

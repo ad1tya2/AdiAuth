@@ -64,8 +64,11 @@ public class pluginMsg implements PluginMessageListener{
     public static void freezePlayer(UUID uuid){
         if(!frozenPlayers.contains(uuid)) {
             Player p = Bukkit.getPlayer(uuid);
-            if(blindness && p != null){
-                p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 1000000, 10));
+            if(p != null) {
+                if (blindness) {
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 1000000, 10));
+                }
+                p.setAllowFlight(true);
             }
             frozenPlayers.add(uuid);
         }
@@ -74,8 +77,8 @@ public class pluginMsg implements PluginMessageListener{
     public static void unfreezePlayer(UUID uuid){
         frozenPlayers.remove(uuid);
         Player p = Bukkit.getPlayer(uuid);
-        if(blindness && p!=null) {
-            p.removePotionEffect(PotionEffectType.BLINDNESS);
+        if(p != null) {
+            unfreezePlayer(p);
         }
     }
 
@@ -83,6 +86,9 @@ public class pluginMsg implements PluginMessageListener{
         frozenPlayers.remove(p.getUniqueId());
         if(blindness) {
             p.removePotionEffect(PotionEffectType.BLINDNESS);
+        }
+        if(freezePlayer){
+            p.setAllowFlight(false);
         }
     }
 }

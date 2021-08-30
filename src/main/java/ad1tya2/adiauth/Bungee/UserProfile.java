@@ -8,6 +8,10 @@ public class UserProfile {
     public  UUID uuid;
     public  String password;
     public  String lastIp;
+
+    public boolean fullJoined = false;
+    //Full joined is set when a person completely logs into the server for the first time
+
     public long sessionEnd = 1L;
     boolean loggingIn = false;
     public boolean isPremium(){

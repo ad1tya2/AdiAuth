@@ -59,14 +59,16 @@ public class storage {
         }
     }
     public static void addAccountToIpList(UserProfile profile){
-        if(profile.lastIp == null){
+        if(profile.lastIp == null || !profile.fullJoined){
             return;
         }
         List<UserProfile> profiles = profilesByIp.get(profile.lastIp);
         if(profiles == null){
             profiles = new ArrayList<UserProfile>();
         }
-        profiles.add(profile);
+        if(!profiles.contains(profile)) {
+            profiles.add(profile);
+        }
         profilesByIp.put(profile.lastIp, profiles);
     }
     public static void load(){
@@ -77,8 +79,8 @@ public class storage {
             Statement stmt = conn.createStatement();
             int users = 0;
             stmt.execute("CREATE TABLE IF NOT EXISTS auth_users( uuid CHAR(36) PRIMARY KEY, lastIp VARCHAR(40), password VARCHAR(256), username VARCHAR(16), " +
-                    "premiumUuid CHAR(36))");
-            ResultSet records = stmt.executeQuery("SELECT uuid, lastIp, password, username, premiumUuid FROM auth_users");
+                    "premiumUuid CHAR(36), fullJoined BOOLEAN)");
+            ResultSet records = stmt.executeQuery("SELECT uuid, lastIp, password, username, premiumUuid, fullJoined FROM auth_users");
             while (records.next()){
                 users++;
                 UserProfile user = new UserProfile();
@@ -91,6 +93,7 @@ public class storage {
                 } catch (Exception e){
                     user.premiumUuid = null;
                 }
+                user.fullJoined = records.getBoolean(6);
                 updatePlayerMemory(user);
             }
             records.close();
@@ -106,13 +109,13 @@ public class storage {
     }
 
     public static Optional<UserProfile> getPlayerForLogin(String name, String ip){
-        if(getAccounts(ip, AccountType.TOTAL)>Config.maxTotalAccounts){
-            return null;
-        }
                 UserProfile user = new UserProfile();
                 user.username = name;
                 user.lastIp = ip;
                 UserProfile oldUserByName = pMap.get(name);
+                if(oldUserByName == null && getAccounts(ip, AccountType.TOTAL)>=Config.maxTotalAccounts){
+                  return null;
+                }
                 Optional<UUID> uuid;
                 if(Config.forceBackupServer){
                     uuid = Uuids.getBackupServerUUID(name);
@@ -128,12 +131,16 @@ public class storage {
                 }
                 if(uuid == null){
                     logApiError();
-                    return Optional.of(oldUserByName);
+                    if(oldUserByName == null){
+                        return Optional.empty();
+                    }else {
+                        return Optional.of(oldUserByName);
+                    }
                 }
 
                     //Premium
                     if(uuid.isPresent()) {
-                        if(getAccounts(ip, AccountType.PREMIUM)>Config.maxPremiumAccounts){
+                        if(oldUserByName == null && getAccounts(ip, AccountType.PREMIUM)>=Config.maxPremiumAccounts){
                             return null;
                         }
                         user.premiumUuid = uuid.get();
@@ -145,21 +152,21 @@ public class storage {
                                 if (Config.convertOldCrackedToPremium) {
                                     oldUserByName.premiumUuid = user.premiumUuid;
                                 }
-                                updatePlayer(oldUserByName);
+                                updatePlayerMemory(oldUserByName);
                                 return Optional.of(oldUserByName);
                             }
-                            updatePlayer(user);
+                            updatePlayerMemory(user);
                             return Optional.of(user);
                         } else if (oldPremiumUser.username != user.username) {
                             //Username change event
                             oldPremiumUser.username = user.username;
                             oldPremiumUser.lastIp = ip;
-                            updatePlayer(oldPremiumUser);
+                            updatePlayerMemory(oldPremiumUser);
                             return Optional.of(oldPremiumUser);
                         } else {
                             if (oldPremiumUser.lastIp != ip) {
                                 oldPremiumUser.lastIp = ip;
-                                updatePlayer(oldPremiumUser);
+                                updatePlayerMemory(oldPremiumUser);
                             }
                             return Optional.of(oldPremiumUser);
                         }
@@ -167,14 +174,14 @@ public class storage {
 
                     //Cracked
                     else {
-                        if(getAccounts(ip, AccountType.CRACKED)>Config.maxCrackedAccounts){
+                        if(oldUserByName == null && getAccounts(ip, AccountType.CRACKED)>=Config.maxCrackedAccounts){
                             return null;
                         }
                         user.uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8));
                         user.premiumUuid = null;
 
                         if (oldUserByName == null) {
-                            updatePlayer(user);
+                            updatePlayerMemory(user);
 
                             return Optional.of(user);
                         }
@@ -190,7 +197,7 @@ public class storage {
                                 JsonArray rawUsernames = parser.parse(tools.getString(response.getEntity().getContent())).getAsJsonArray();
                                 oldUserByName.username = rawUsernames.get(rawUsernames.size() - 1).getAsJsonObject().get("name").getAsString();
                                 updatePlayer(oldUserByName);
-                                updatePlayer(user);
+                                updatePlayerMemory(user);
                                 response.close();
                                 client.close();
                             }
@@ -202,6 +209,13 @@ public class storage {
                         }
                         return Optional.of(user);
                     }
+    }
+
+
+    public static void setFullJoined(UserProfile profile){
+        if(!profile.fullJoined){
+            profile.fullJoined = true;
+        }
     }
 
     public static UserProfile getPlayerMemory(String name){
@@ -216,12 +230,13 @@ public class storage {
                 try {
                     Connection conn = mysql.getConnection();
                     PreparedStatement stmt = conn.prepareStatement(
-                            "REPLACE INTO auth_users(uuid, lastIp, password, username, premiumUuid) VALUES(?, ?, ?, ?, ?) ");
+                            "REPLACE INTO auth_users(uuid, lastIp, password, username, premiumUuid, fullJoined) VALUES(?, ?, ?, ?, ?, ?) ");
                     stmt.setString(1, profile.uuid.toString());
                     stmt.setString(2, profile.lastIp);
                     stmt.setString(3, profile.password);
                     stmt.setString(4, profile.username);
                     stmt.setString(5, profile.premiumUuid == null? null: profile.premiumUuid.toString());
+                    stmt.setBoolean(6, profile.fullJoined);
                     stmt.executeUpdate();
                     stmt.close();
 

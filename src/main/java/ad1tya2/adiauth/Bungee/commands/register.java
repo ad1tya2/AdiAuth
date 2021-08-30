@@ -35,6 +35,7 @@ public class register extends Command {
         }
         else {
             profile.password = pass;
+            profile.fullJoined = true;
             storage.updatePlayer(profile);
             p.sendTitle(Config.Messages.loginAndRegisterSuccessTitle);
             p.sendMessage(Config.Messages.loginAndRegisterSuccess);

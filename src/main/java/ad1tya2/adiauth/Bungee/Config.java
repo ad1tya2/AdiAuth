@@ -86,7 +86,7 @@ public class Config {
         Messages.genericPremiumError = getMsgString("genericPremiumError");
         Messages.successfulChangePass = getMsgString("successfulChangePass");
             forceBackupServer = config.getBoolean("forceBackupServer");
-            backupServer = config.getString("forceBackupServer");
+            backupServer = config.getString("backupServer");
             backupServerEnabled = !backupServer.equals("");
             convertOldCrackedToPremium = config.getBoolean("convertOldCrackedToPremium");
             maxPremiumAccounts = config.getInt("maxPremiumAccounts");

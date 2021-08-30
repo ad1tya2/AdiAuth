@@ -37,7 +37,7 @@ lobbyServers:
 
 #The url of a backup server to use, Contact me on my discord if you wish to use it
 #Note: I dont give backup server for free xD
-backupServer: false
+backupServer: ''
 
 #Use the backup server always
 forceBackupServer: false
@@ -92,7 +92,7 @@ messages:
   loginNotRegistered: '&cPlease register first!'
   loginWrongPass: '&eYou have used an incorrect password!'
   noServersAvailable: '&cNo servers are currently available to connect you to, please come back later'
-  logoutMessage: '&2Successfully logged out!'\
+  logoutMessage: '&2Successfully logged out!'
   changePassError: '&cInvalid Format!, &ePlease use /changepass <oldpass> <newpass>'
   successfulChangePass: '&2&lPassword changed successfully!'
   genericPremiumError: '&2You dont need to use this command :)'
