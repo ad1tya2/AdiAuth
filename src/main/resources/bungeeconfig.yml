@@ -2,12 +2,16 @@
 ########## AdiAuth ##############
 ############### -by ad1tya2 #####
 
-#dont touch
-configversion: 1
+#Dont touch At any cost
+configversion: 2
 
 #storage
-#Only mysql available right now
-#mysql
+#Options available, h2 and mysql
+#H2 is also a local storage system, no external database is needed
+#h2 is a good alternative to sqlite
+database: h2
+
+#database settings for mysql if it is enabled
 mysql:
   username: username
   password: passmyword
@@ -77,6 +81,11 @@ maxTotalAccounts: 3
 #Leave empty if you dont want this feature to be enabled
 secondAttempt: '&cPlease change your username to something uncommon, &ethis username is already taken by a premium player!'
 
+#Whether to disconnect the player if he enters the wrong password
+disconnectOnWrongPass: true
+
+#The time in seconds that the players have to login or register
+authTime: 120
 
 messages:
   registerMessage: '&bWelcome!, Please register to play, /register <password>'
@@ -97,3 +106,6 @@ messages:
   successfulChangePass: '&2&lPassword changed successfully!'
   genericPremiumError: '&2You dont need to use this command :)'
   tooManyAccounts: '&cThere are too many accounts from this ip'
+  #TIMELEFT will be replaced by number of seconds left
+  loginRegisterBossBar: '&e You have TIMELEFT seconds.'
+  authTimeExceeded: '&cYou werent able to login within the given time!'

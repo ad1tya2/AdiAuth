@@ -1,7 +1,7 @@
 package ad1tya2.adiauth.Bungee;
 
 import ad1tya2.adiauth.Bungee.commands.*;
-import ad1tya2.adiauth.Bungee.data.mysql;
+import ad1tya2.adiauth.Bungee.data.database;
 import ad1tya2.adiauth.Bungee.data.servers;
 import ad1tya2.adiauth.Bungee.data.storage;
 import ad1tya2.adiauth.Bungee.events.Handler;
@@ -23,7 +23,10 @@ public final class AdiAuth extends Plugin {
         // Plugin startup logic
         instance = this;
 
-        load();
+        Config.load();
+        database.load();
+        storage.load();
+        servers.load();
 
         getProxy().getPluginManager().registerListener(this, new Handler());
         getProxy().getLogger().setFilter(new Filter() {
@@ -50,9 +53,10 @@ public final class AdiAuth extends Plugin {
         getProxy().getPluginManager().registerCommand(this, new unregister());
         getProxy().getPluginManager().registerCommand(this, new forcechangepass());
         servers.serversStatusChecker();
+
     }
 
-    public static void load(){
+    public static void reload(){
         Config.load();
         storage.load();
         servers.load();
@@ -64,7 +68,7 @@ public final class AdiAuth extends Plugin {
 
     @Override
     public void onDisable() {
-        mysql.close();
+        database.close();
         executor.shutdownNow();
         // Plugin shutdown logic
     }

@@ -14,25 +14,31 @@ import net.md_5.bungee.config.YamlConfiguration;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 
 public class Config {
     public static int SessionTime = 120;
+    public enum StorageType {
+        Mysql, H2
+    }
+    public static StorageType storageType;
 
     public static List<ServerInfo> lobbies = new ArrayList<ServerInfo>();
     public static List<ServerInfo> auths = new ArrayList<ServerInfo>();
     public static List<String> whitelistedCommands;
 
-    public static String pluginMsgConf;
     public static int serverCheckInterval = 30,
-            maxPremiumAccounts, maxCrackedAccounts, maxTotalAccounts;
-    public static String backupServer, secondAttempt;
-    public static boolean forceBackupServer, convertOldCrackedToPremium, backupServerEnabled, secondAttemptEnabled;
+            maxPremiumAccounts, maxCrackedAccounts, maxTotalAccounts, authTime;
+
+    public static String backupServer, secondAttempt, pluginMsgConf;
+
+    public static boolean forceBackupServer, convertOldCrackedToPremium, backupServerEnabled, secondAttemptEnabled, disconnectOnWrongPass;
     public static class Messages {
         public static String registerError, loginAndRegisterSuccess, alreadyLoggedIn, loginNotRegistered,
                 loginWrongPass, loginError, alreadyRegistered, noServersAvailable, registerMessage,
                 loginMessage, logoutMessage, changePassError, genericPremiumError, successfulChangePass,
-                tooManyAccounts;
+                tooManyAccounts, loginRegisterBossBar, authTimeExceeded;
         public static Title loginAndRegisterSuccessTitle, registerTitle, loginTitle;
     }
     public  enum MYSQL {
@@ -45,12 +51,15 @@ public class Config {
 
 
     public static Configuration config;
+    private static Configuration defaultConf;
 
 
     public static void load() {
         saveDefaultConf();
         try {
-            config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(AdiAuth.instance.getDataFolder(), "config.yml"));
+            //Loading the default config
+            defaultConf = ConfigurationProvider.getProvider(YamlConfiguration.class).load(AdiAuth.instance.getResourceAsStream("bungeeconfig.yml"));
+            config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(new File(AdiAuth.instance.getDataFolder(), "config.yml"), defaultConf);
         Configuration mysqlConf = config.getSection("mysql");
         for (MYSQL x : MYSQL.values()) {
             x.value = mysqlConf.getString(x.name());
@@ -95,14 +104,28 @@ public class Config {
             Messages.tooManyAccounts = getMsgString("tooManyAccounts");
             secondAttempt = tools.getColoured(config.getString("secondAttempt"));
             Config.secondAttemptEnabled = !secondAttempt.equals("");
+            disconnectOnWrongPass = config.getBoolean("disconnectOnWrongPass");
+            authTime = config.getInt("authTime");
+            Messages.loginRegisterBossBar = getMsgString("loginRegisterBossBar");
+            Messages.authTimeExceeded = getMsgString("authTimeExceeded");
+            String database = config.getString("database").toLowerCase();
+            switch (database){
+                case "mysql":
+                    storageType = StorageType.Mysql;
+                    break;
+                case "h2":
+                    storageType = StorageType.H2;
+                    break;
+                default:
+                    storageType = StorageType.H2;
+                    break;
+            }
 
         }
          catch (Exception e){
             e.printStackTrace();
             tools.log(Level.SEVERE, "Config wasnt loaded properly!");
         }
-
-
     }
 
 
@@ -115,10 +138,15 @@ public class Config {
         title.fadeIn(50);
         return title;
     }
+
     private static void saveDefaultConf(){
         File configFile = new File(AdiAuth.instance.getDataFolder(), "config.yml");
         if (!AdiAuth.instance.getDataFolder().exists()) {
             AdiAuth.instance.getDataFolder().mkdir();
+        }
+        File libFolder = new File(configFile.getParentFile().toString()+"/libs");
+        if(!libFolder.exists()){
+            libFolder.mkdir();
         }
         if (!configFile.exists()) {
             try {

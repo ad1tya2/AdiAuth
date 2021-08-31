@@ -73,9 +73,8 @@ public class storage {
     }
     public static void load(){
         try {
-            mysql.load();
             tools.log("&eLoading Players...");
-            Connection conn = mysql.getConnection();
+            Connection conn = database.getConnection();
             Statement stmt = conn.createStatement();
             int users = 0;
             stmt.execute("CREATE TABLE IF NOT EXISTS auth_users( uuid CHAR(36) PRIMARY KEY, lastIp VARCHAR(40), password VARCHAR(256), username VARCHAR(16), " +
@@ -228,7 +227,7 @@ public class storage {
             @Override
             public void run() {
                 try {
-                    Connection conn = mysql.getConnection();
+                    Connection conn = database.getConnection();
                     PreparedStatement stmt = conn.prepareStatement(
                             "REPLACE INTO auth_users(uuid, lastIp, password, username, premiumUuid, fullJoined) VALUES(?, ?, ?, ?, ?, ?) ");
                     stmt.setString(1, profile.uuid.toString());

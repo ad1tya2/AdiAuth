@@ -13,7 +13,7 @@ public class reload extends Command {
 
     @Override
     public void execute(CommandSender sender, String[] args) {
-        AdiAuth.load();
+        AdiAuth.reload();
         sender.sendMessage(tools.getColoured("&bAdiAuth was successfully Reloaded!"));
     }
 }

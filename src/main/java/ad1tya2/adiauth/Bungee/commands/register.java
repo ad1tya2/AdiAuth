@@ -39,7 +39,7 @@ public class register extends Command {
             storage.updatePlayer(profile);
             p.sendTitle(Config.Messages.loginAndRegisterSuccessTitle);
             p.sendMessage(Config.Messages.loginAndRegisterSuccess);
-            profile.startSession();
+            profile.startSession(p);
             login.loggedInPlayer(p);
         }
     }

@@ -36,11 +36,16 @@ public class login extends Command {
         else if(profile.password.equals(pass)){
             p.sendTitle(Config.Messages.loginAndRegisterSuccessTitle);
             p.sendMessage(Config.Messages.loginAndRegisterSuccess);
-            profile.startSession();
+            profile.startSession(p);
             loggedInPlayer(p);
         }
         else {
-            p.sendMessage(Config.Messages.loginWrongPass);
+            if(Config.disconnectOnWrongPass){
+                p.disconnect(Config.Messages.loginWrongPass);
+            }
+            else {
+                p.sendMessage(Config.Messages.loginWrongPass);
+            }
         }
     }
 
