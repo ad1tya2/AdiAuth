@@ -18,5 +18,5 @@ There is no config for the backend servers, everything can be configured directl
 <h3>More features will be added soon!</h3>
 <h3> Note: Multi Proxy environments are not supported yet!, please create an issue or comment on an existing issue if you are interested in this</h3>
 
-
+### [Spigot Page](https://www.spigotmc.org/resources/adiauth.95828/)
 ### [Discord](https://discord.gg/bYWxMysquM)
