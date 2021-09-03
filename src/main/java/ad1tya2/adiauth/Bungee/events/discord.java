@@ -48,9 +48,18 @@ public class discord {
                         {
                             String code = event.getMessage().getContentRaw();
                             UserProfile profile = pendingRegistrations.get(code);
+                            UserProfile discordAuthorProfile = storage.getPlayerByDiscord(event.getAuthor().getId());
                             if(profile == null){
                                 return;
                             }
+
+                            if(profile.discordId != null || discordAuthorProfile != null){
+                                profile.discordLoginPending = false;
+                                event.getMessage().reply("You can only link one discord account to one minecraft account.").queue();
+                                pendingRegistrations.remove(code);
+                                return;
+                            }
+
                             ProxiedPlayer p = ProxyServer.getInstance().getPlayer(profile.username);
                             if(profile.discordLoginPending && code.equals(String.valueOf(profile.getTwoFactorCode())) && p != null){
                                 profile.loggedInPlayer(p);
@@ -60,6 +69,7 @@ public class discord {
                                     event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRoleById(Config.Discord.roleToGive)).queue();
                                 }
                                 event.getMessage().reply("2fa Successfully enabled!").queue();
+                                pendingRegistrations.remove(code);
                                 storage.updatePlayer(profile);
                             }
                         }
