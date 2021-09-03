@@ -14,6 +14,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.connection.InitialHandler;
+import net.md_5.bungee.connection.LoginResult;
 import net.md_5.bungee.event.EventHandler;
 
 import java.lang.reflect.Field;
@@ -61,18 +62,22 @@ public class Handler implements Listener {
 
     }
 
-    @EventHandler(priority = 127)
+    @EventHandler(priority = Byte.MIN_VALUE)
     public void onLogin(LoginEvent event){
         try {
             InitialHandler handler = (InitialHandler) event.getConnection();
             UserProfile profile = storage.getPlayerMemory(handler.getName());
-            Class handle = handler.getClass();
-            Field uniqueId = handle.getDeclaredField("uniqueId");
+            LoginResult loginResult = handler.getLoginProfile();
+            Field uniqueId = handler.getClass().getDeclaredField("uniqueId");
             uniqueId.setAccessible(true);
             uniqueId.set(handler, profile.uuid);
+            if(loginResult != null){
+                loginResult.setId(profile.uuid.toString());
+            }
         } catch (Exception e){
             e.printStackTrace();
             tools.log(Level.SEVERE, "Login unsuccessful!");
+            event.setCancelled(true);
         }
     }
 
@@ -86,21 +91,11 @@ public class Handler implements Listener {
             storage.updatePlayer(profile);
     }
 
-
-
     @EventHandler
     public void serverConnect(ServerConnectEvent event){
         ProxiedPlayer p = event.getPlayer();
         UserProfile user = storage.getPlayerMemory(p.getName());
-        if(user.isLogged()){
-            ServerInfo hubServer = servers.getHubServer();
-            if(hubServer == null){
-                p.disconnect(Config.Messages.noServersAvailable);
-                return;
-            }
-            event.setTarget(hubServer);
-        }
-        else {
+        if (!user.isLogged()) {
             ServerInfo authServer = servers.getAuthServer();
             if(authServer == null){
                 p.disconnect(Config.Messages.noServersAvailable);

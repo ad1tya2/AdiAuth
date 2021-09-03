@@ -113,7 +113,13 @@ messages:
   loginTitle: '&2/login <password>'
   registerError: '&cInvalid Format! Please use /register <password>'
   alreadyRegistered: '&cYou are already registered. Please use /changepass <oldpassword> <newpassword> if you want to change your pass'
-  loginAndRegisterSuccess: '&aWelcome to adiAuth, have fun!'
+  loginAndRegisterSuccess: |-
+    &aWelcome to INMC, have fun!
+    &7----------------------------
+     &bTip:- &2Use /2fa register
+     To enable 2fa and secure
+        your account
+    &7----------------------------
   loginAndRegisterSuccessTitle: '&aWelcome!'
   alreadyLoggedIn: '&cError: &7You are already logged in!'
   loginError: '&cInvalid Format! Please use /login <password>'

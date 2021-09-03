@@ -23,7 +23,7 @@ public class login extends Command {
         ProxiedPlayer p = (ProxiedPlayer) sender;
         UserProfile profile = storage.getPlayerMemory(p.getName());
         String pass = args[0];
-        if(profile.isLogged()){
+        if(profile.isLogged() || profile.isPremium()){
             sender.sendMessage(Config.Messages.alreadyLoggedIn);
         }
         else if(profile.password == null){

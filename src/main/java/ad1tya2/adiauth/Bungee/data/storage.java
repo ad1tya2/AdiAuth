@@ -245,6 +245,7 @@ public class storage {
                     stmt.setString(7, profile.discordId);
                     stmt.executeUpdate();
                     stmt.close();
+                    conn.close();
 
                 } catch (SQLException e) {
                     e.printStackTrace();
