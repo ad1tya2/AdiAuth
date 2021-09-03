@@ -6,7 +6,6 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.Title;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
@@ -14,7 +13,6 @@ import net.md_5.bungee.config.YamlConfiguration;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Level;
 
 public class Config {
@@ -38,8 +36,13 @@ public class Config {
         public static String registerError, loginAndRegisterSuccess, alreadyLoggedIn, loginNotRegistered,
                 loginWrongPass, loginError, alreadyRegistered, noServersAvailable, registerMessage,
                 loginMessage, logoutMessage, changePassError, genericPremiumError, successfulChangePass,
-                tooManyAccounts, loginRegisterBossBar, authTimeExceeded;
+                tooManyAccounts, loginRegisterBossBar, authTimeExceeded, discordRegisterMessage, discordLoginMessage;
         public static Title loginAndRegisterSuccessTitle, registerTitle, loginTitle;
+    }
+    public static class Discord {
+        public static String bot_token, loginButtonChannel, activityStatus, buttonMessage, buttonText, roleToGive;
+        public static boolean enabled, compulsory_for_enabled, roleToGiveEnabled;
+        public static List<String> compulsory_for;
     }
     public  enum MYSQL {
         username,
@@ -121,6 +124,23 @@ public class Config {
                     break;
             }
 
+            Configuration discord = config.getSection("discord");
+
+            //Discord config
+            Discord.bot_token = discord.getString("bot-token");
+            Discord.compulsory_for = discord.getStringList("compulsory-for");
+            Discord.enabled = discord.getBoolean("enabled");
+            Discord.compulsory_for_enabled = AdiAuth.instance.getProxy().getPluginManager().getPlugin("LuckPerms") != null
+                    && Discord.compulsory_for.size() != 0 ;
+            Discord.loginButtonChannel = discord.getString("loginButtonChannel");
+            Discord.activityStatus = discord.getString("activityStatus");
+            Discord.roleToGive = discord.getString("roleToGive");
+            Discord.roleToGiveEnabled = !(Discord.roleToGive.equals(""));
+            Discord.buttonMessage = discord.getString("buttonMessage");
+            Discord.buttonText = discord.getString("buttonText");
+
+            Messages.discordRegisterMessage = getMsgString("discordRegisterMessage");
+            Messages.discordLoginMessage = getMsgString("discordLoginMessage");
         }
          catch (Exception e){
             e.printStackTrace();
@@ -131,6 +151,9 @@ public class Config {
 
     private static String getMsgString(String name){
         return tools.getColoured(config.getString("messages."+name));
+    }
+    private static String getUncolouredMsg(String name){
+        return config.getString("messages."+name);
     }
     private static Title createTitle(String msg){
         Title title = ProxyServer.getInstance().createTitle().title(

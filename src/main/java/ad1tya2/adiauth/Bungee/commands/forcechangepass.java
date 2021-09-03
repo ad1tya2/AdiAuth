@@ -2,7 +2,7 @@ package ad1tya2.adiauth.Bungee.commands;
 
 import ad1tya2.adiauth.Bungee.UserProfile;
 import ad1tya2.adiauth.Bungee.data.storage;
-import ad1tya2.adiauth.Bungee.utils.tools;
+import ad1tya2.adiauth.Bungee.utils.passwordUtils;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
 
@@ -23,7 +23,7 @@ public class forcechangepass extends Command {
         if(profile == null){
             sender.sendMessage("&ePlayer dosent exist");
         } else {
-            profile.password = tools.getSha256(newPass);
+            profile.password = passwordUtils.getSha256(newPass);
             storage.updatePlayer(profile);
             sender.sendMessage("&2Successfully updated password of &b"+username);
         }

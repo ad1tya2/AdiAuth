@@ -3,10 +3,8 @@ package ad1tya2.adiauth.Bungee.data;
 import ad1tya2.adiauth.Bungee.AdiAuth;
 import ad1tya2.adiauth.Bungee.Config;
 import net.md_5.bungee.api.Callback;
-
 import net.md_5.bungee.api.ServerPing;
 import net.md_5.bungee.api.config.ServerInfo;
-
 
 import java.util.ArrayList;
 import java.util.HashMap;

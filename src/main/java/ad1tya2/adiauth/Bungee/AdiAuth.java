@@ -5,6 +5,7 @@ import ad1tya2.adiauth.Bungee.data.database;
 import ad1tya2.adiauth.Bungee.data.servers;
 import ad1tya2.adiauth.Bungee.data.storage;
 import ad1tya2.adiauth.Bungee.events.Handler;
+import ad1tya2.adiauth.Bungee.events.discord;
 import net.md_5.bungee.api.plugin.Plugin;
 
 import java.util.Arrays;
@@ -27,6 +28,7 @@ public final class AdiAuth extends Plugin {
         database.load();
         storage.load();
         servers.load();
+        discord.load();
 
         getProxy().getPluginManager().registerListener(this, new Handler());
         getProxy().getLogger().setFilter(new Filter() {
@@ -52,6 +54,8 @@ public final class AdiAuth extends Plugin {
         getProxy().getPluginManager().registerCommand(this, new changepass());
         getProxy().getPluginManager().registerCommand(this, new unregister());
         getProxy().getPluginManager().registerCommand(this, new forcechangepass());
+        getProxy().getPluginManager().registerCommand(this, new twofactor());
+        getProxy().getPluginManager().registerCommand(this, new converter());
         servers.serversStatusChecker();
 
     }
@@ -60,6 +64,7 @@ public final class AdiAuth extends Plugin {
         Config.load();
         storage.load();
         servers.load();
+        discord.load();
     }
 
     public static void runAsync(Runnable task){

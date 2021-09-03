@@ -3,7 +3,7 @@ package ad1tya2.adiauth.Bungee.commands;
 import ad1tya2.adiauth.Bungee.Config;
 import ad1tya2.adiauth.Bungee.UserProfile;
 import ad1tya2.adiauth.Bungee.data.storage;
-import ad1tya2.adiauth.Bungee.utils.tools;
+import ad1tya2.adiauth.Bungee.utils.passwordUtils;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
@@ -25,13 +25,13 @@ public class changepass extends Command {
         if(profile.isPremium()){
             p.sendMessage(Config.Messages.genericPremiumError);
         }
-        String oldPass = tools.getSha256(args[0]);
-        String newPass = tools.getSha256(args[1]);
+        String oldPass = args[0];
+        String newPass = passwordUtils.getSha256(args[1]);
 
-        if(oldPass != profile.password){
-            p.sendMessage(Config.Messages.changePassError);
-        } else if(newPass == oldPass){
+        if(newPass == oldPass){
             p.sendMessage(Config.Messages.successfulChangePass);
+        } else if(!passwordUtils.comparePass(profile, oldPass)){
+            p.sendMessage(Config.Messages.changePassError);
         } else {
             profile.password = newPass;
             storage.updatePlayer(profile);

@@ -63,6 +63,7 @@ whitelistedCommands:
   - /reg
   - /login
   - /l
+  - /2fa
 
 #The maximum number of premium accounts that can join from a single ip
 maxPremiumAccounts: 3
@@ -87,6 +88,24 @@ disconnectOnWrongPass: true
 #The time in seconds that the players have to login or register
 authTime: 120
 
+#Discord 2fa system
+discord:
+  enabled: false
+  bot-token: ''
+  loginButtonChannel: ''
+  #Role to give on successfull 2fa registration, it will be taken if the person disables 2fa
+  #Keep empty if you dont want to enable this feature
+  roleToGive: ''
+  activityStatus: 'Securing your server with AdiAuth :)'
+  buttonMessage: Click on this button to login!
+  buttonText: Login
+  #Compulsory for is a list of luckperms groups for which using discord 2fa is compulsory
+  #This feature will not be enabled if you dont have luckperms.
+  compulsory-for:
+    - 'staff'
+    - 'owners'
+  #Important Note: Multiple accounts cannot be linked to one discord id.
+
 messages:
   registerMessage: '&eWelcome! Please &c/register <password> &eto play.'
   loginMessage: '&eWelcome! Please &c/login <password> &eto play'
@@ -107,5 +126,18 @@ messages:
   genericPremiumError: '&2You dont need to use this command :)'
   tooManyAccounts: '&cError: &7There are too many accounts from this IP.'
   #TIMELEFT will be replaced by number of seconds left
-  loginRegisterBossBar: '&eYou have &cTIMELEFT seconds&e left to register.'
+  loginRegisterBossBar: '&eYou have &cTIMELEFT seconds&e left.'
   authTimeExceeded: '&cYou werent able to login within the given time!'
+  #BOTNAME is automatically replaced to the name of the discord bot with its hashtag
+  #THISLINK and CODE is also automatically replaced
+  #You have to replace discordInviteLinkHere
+  discordRegisterMessage: |-
+    &bPlease dm &dCODE &bto the Discord Bot
+    The Bot's name is &2BOTNAME &byou can either dm it directly
+    Or click on THISLINK to open the dms with the bot!
+    You can find it in our server &ddiscordInviteLinkHere
+  #CHANNELNAME is replaced by the name of the channel
+  #THISLINK is replaced by an url to open the channel in the browser
+  discordLoginMessage: |-
+    &bPlease click on the button in CHANNELNAME to login
+    &eYou can also click on THISLINK to open the channel directly

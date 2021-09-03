@@ -2,29 +2,22 @@ package ad1tya2.adiauth.Bungee.events;
 
 import ad1tya2.adiauth.Bungee.AdiAuth;
 import ad1tya2.adiauth.Bungee.Config;
+import ad1tya2.adiauth.Bungee.UserProfile;
 import ad1tya2.adiauth.Bungee.data.servers;
 import ad1tya2.adiauth.Bungee.data.storage;
-import ad1tya2.adiauth.Bungee.utils.BossBar;
 import ad1tya2.adiauth.Bungee.utils.pluginMessaging;
 import ad1tya2.adiauth.Bungee.utils.tools;
-import ad1tya2.adiauth.Bungee.UserProfile;
 import ad1tya2.adiauth.PluginMessages;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.PendingConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.chat.ComponentSerializer;
 import net.md_5.bungee.connection.InitialHandler;
 import net.md_5.bungee.event.EventHandler;
 
-
 import java.lang.reflect.Field;
-
 import java.util.Optional;
-import java.util.UUID;
 import java.util.logging.Level;
 
 public class Handler implements Listener {
@@ -100,7 +93,12 @@ public class Handler implements Listener {
         ProxiedPlayer p = event.getPlayer();
         UserProfile user = storage.getPlayerMemory(p.getName());
         if(user.isLogged()){
-            event.setTarget(servers.getHubServer());
+            ServerInfo hubServer = servers.getHubServer();
+            if(hubServer == null){
+                p.disconnect(Config.Messages.noServersAvailable);
+                return;
+            }
+            event.setTarget(hubServer);
         }
         else {
             ServerInfo authServer = servers.getAuthServer();
@@ -112,9 +110,13 @@ public class Handler implements Listener {
             if(!user.isRegistered()){
                 p.sendTitle(Config.Messages.registerTitle);
                 p.sendMessage(Config.Messages.registerMessage);
-            }else {
-                p.sendTitle(Config.Messages.loginTitle);
-                p.sendMessage(Config.Messages.loginMessage);
+            } else {
+                if(user.is2faLoginNeeded() && user.isPremium()){
+                    discord.discordLogin(user, p);
+                } else {
+                    p.sendTitle(Config.Messages.loginTitle);
+                    p.sendMessage(Config.Messages.loginMessage);
+                }
             }
             user.startTitleTask(p);
             pluginMessaging.sendMessageBungee(user, PluginMessages.unLogged, authServer);

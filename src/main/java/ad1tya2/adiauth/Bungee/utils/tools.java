@@ -3,12 +3,15 @@ package ad1tya2.adiauth.Bungee.utils;
 import ad1tya2.adiauth.Bungee.AdiAuth;
 import net.md_5.bungee.api.ChatColor;
 
-
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.logging.Level;
 
@@ -34,19 +37,22 @@ public class tools {
         return ((InetSocketAddress)address).getAddress().toString().split("/")[1];
     }
 
-    public static String getSha256(String str){
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(str.getBytes(StandardCharsets.UTF_8));
-            return bytesToHex(hash); // make it printable
-        }catch(Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
-    private static String bytesToHex(byte[] hash) {
-        StringBuilder result = new StringBuilder();
-        for (byte b : hash) result.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
-        return result.toString();
+
+
+    public static void loadLibrary(String link, String fileName) throws IOException {
+            fileName = "plugins/AdiAuth/libs/"+fileName;
+            if(!fileName.endsWith(".jar")){
+                fileName = fileName+".jar";
+            }
+            File library = new File(fileName);
+            if(!library.exists()) {
+                log("&2Downloading &b"+fileName+" &2From "+link+"....");
+                URL url = new URL(link);
+                InputStream in = url.openStream();
+                Files.copy(in, Paths.get(fileName));
+                log("&2Download complete!");
+            }
+            URLClassLoaderAccess access = URLClassLoaderAccess.create((URLClassLoader) AdiAuth.instance.getClass().getClassLoader());
+             access.addURL(library.toURI().toURL());
     }
 }

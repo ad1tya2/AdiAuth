@@ -3,10 +3,9 @@ package ad1tya2.adiauth.Bungee.commands;
 import ad1tya2.adiauth.Bungee.Config;
 import ad1tya2.adiauth.Bungee.UserProfile;
 import ad1tya2.adiauth.Bungee.data.storage;
-
-import ad1tya2.adiauth.Bungee.utils.tools;
+import ad1tya2.adiauth.Bungee.events.discord;
+import ad1tya2.adiauth.Bungee.utils.passwordUtils;
 import net.md_5.bungee.api.CommandSender;
-
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
@@ -26,7 +25,7 @@ public class register extends Command {
         }
         ProxiedPlayer p = (ProxiedPlayer) sender;
         UserProfile profile = storage.getPlayerMemory(p.getName());
-        String pass = tools.getSha256(args[0]);
+        String pass = passwordUtils.getSha256(args[0]);
         if(profile.isPremium()){
             sender.sendMessage(Config.Messages.alreadyRegistered);
         }
@@ -37,10 +36,11 @@ public class register extends Command {
             profile.password = pass;
             profile.fullJoined = true;
             storage.updatePlayer(profile);
-            p.sendTitle(Config.Messages.loginAndRegisterSuccessTitle);
-            p.sendMessage(Config.Messages.loginAndRegisterSuccess);
-            profile.startSession(p);
-            login.loggedInPlayer(p);
+            if(profile.is2faLoginNeeded()){
+                discord.discordLogin(profile, p);
+            } else {
+                profile.loggedInPlayer(p);
+            }
         }
     }
 }

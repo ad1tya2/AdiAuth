@@ -2,9 +2,9 @@ package ad1tya2.adiauth.Bungee.data;
 
 import ad1tya2.adiauth.Bungee.AdiAuth;
 import ad1tya2.adiauth.Bungee.Config;
+import ad1tya2.adiauth.Bungee.UserProfile;
 import ad1tya2.adiauth.Bungee.utils.Uuids;
 import ad1tya2.adiauth.Bungee.utils.tools;
-import ad1tya2.adiauth.Bungee.UserProfile;
 import com.google.common.base.Charsets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
@@ -21,7 +21,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
-import static ad1tya2.adiauth.Bungee.utils.Uuids.*;
+import static ad1tya2.adiauth.Bungee.utils.Uuids.getBackupServerUUID;
+import static ad1tya2.adiauth.Bungee.utils.Uuids.getUndashedUuid;
 
 public class storage {
     public enum AccountType {
@@ -30,6 +31,7 @@ public class storage {
     private static final ConcurrentHashMap<String, UserProfile> pMap = new ConcurrentHashMap<String, UserProfile>();
     private static final ConcurrentHashMap<UUID, UserProfile> pMapByPremiumUuid = new ConcurrentHashMap<UUID, UserProfile>();
     private static final ConcurrentHashMap<String, List<UserProfile>> profilesByIp = new ConcurrentHashMap<String, List<UserProfile>>();
+    private static final ConcurrentHashMap<String, UserProfile> pMapByDiscord = new ConcurrentHashMap<String, UserProfile>();
     public static Integer getAccounts(String ip, AccountType type){
         List<UserProfile> profiles = profilesByIp.get(ip);
         if(profiles == null){
@@ -78,8 +80,17 @@ public class storage {
             Statement stmt = conn.createStatement();
             int users = 0;
             stmt.execute("CREATE TABLE IF NOT EXISTS auth_users( uuid CHAR(36) PRIMARY KEY, lastIp VARCHAR(40), password VARCHAR(256), username VARCHAR(16), " +
-                    "premiumUuid CHAR(36), fullJoined BOOLEAN)");
-            ResultSet records = stmt.executeQuery("SELECT uuid, lastIp, password, username, premiumUuid, fullJoined FROM auth_users");
+                    "premiumUuid CHAR(36), fullJoined BOOLEAN, discordId VARCHAR(20) )");
+
+            //Adding column if not exists
+            //I did this for the new discord feature that was added
+            DatabaseMetaData md = conn.getMetaData();
+            if(!(md.getColumns(null, null, "AUTH_USERS", "DISCORDID").next() ||
+                    md.getColumns(null, null, "auth_users", "discordId").next())){
+                //Column dosent exist,
+                stmt.execute("ALTER TABLE auth_users ADD discordId VARCHAR(20);");
+            }
+            ResultSet records = stmt.executeQuery("SELECT uuid, lastIp, password, username, premiumUuid, fullJoined, discordId FROM auth_users");
             while (records.next()){
                 users++;
                 UserProfile user = new UserProfile();
@@ -93,6 +104,7 @@ public class storage {
                     user.premiumUuid = null;
                 }
                 user.fullJoined = records.getBoolean(6);
+                user.discordId = records.getString(7);
                 updatePlayerMemory(user);
             }
             records.close();
@@ -210,13 +222,6 @@ public class storage {
                     }
     }
 
-
-    public static void setFullJoined(UserProfile profile){
-        if(!profile.fullJoined){
-            profile.fullJoined = true;
-        }
-    }
-
     public static UserProfile getPlayerMemory(String name){
         return pMap.get(name);
     }
@@ -229,13 +234,15 @@ public class storage {
                 try {
                     Connection conn = database.getConnection();
                     PreparedStatement stmt = conn.prepareStatement(
-                            "REPLACE INTO auth_users(uuid, lastIp, password, username, premiumUuid, fullJoined) VALUES(?, ?, ?, ?, ?, ?) ");
+                            "REPLACE INTO auth_users(uuid, lastIp, password, username, premiumUuid, fullJoined, discordId) VALUES(?, ?, ?, ?, ?, ?, ?) ");
                     stmt.setString(1, profile.uuid.toString());
                     stmt.setString(2, profile.lastIp);
                     stmt.setString(3, profile.password);
                     stmt.setString(4, profile.username);
+                    //If uuid is null then put null, if not then put string value of uuid
                     stmt.setString(5, profile.premiumUuid == null? null: profile.premiumUuid.toString());
                     stmt.setBoolean(6, profile.fullJoined);
+                    stmt.setString(7, profile.discordId);
                     stmt.executeUpdate();
                     stmt.close();
 
@@ -251,10 +258,17 @@ public class storage {
         asyncUserProfileUpdate(player);
     }
 
+    public static UserProfile getPlayerByDiscord(String discordId){
+        return pMapByDiscord.get(discordId);
+    }
+
     private static void updatePlayerMemory(UserProfile profile){
         pMap.put(profile.username, profile);
         if(profile.premiumUuid != null) {
             pMapByPremiumUuid.put(profile.premiumUuid, profile);
+        }
+        if(profile.discordId != null){
+            pMapByDiscord.put(profile.discordId, profile);
         }
         addAccountToIpList(profile);
     }

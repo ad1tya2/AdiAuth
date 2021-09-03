@@ -1,14 +1,11 @@
 package ad1tya2.adiauth.Bungee.utils;
 
 import ad1tya2.adiauth.Bungee.Config;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
-
-
 
 import java.io.IOException;
 import java.util.Optional;
