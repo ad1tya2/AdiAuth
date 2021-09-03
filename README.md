@@ -10,6 +10,17 @@ It is very simple to use, Just put the plugin in your bungeecord server, configu
 <br><br>
 It also has a lot of configurable options in the config.yml in bungeecord
 There is no config for the backend servers, everything can be configured directly in the bungeecord server reducing a lot of hassle for all server owners :smile:
+<br>
+<h2>Features</h2>
+- Discord 2fa <br>
+- HubServer and authserver balancing <br>
+- Logs in premium players without showing anything about authentication <br>
+- Backup Server system <br>
+- Can AutoUpgrade cracked players to premium. <br>
+- Configurable Messages <br>
+- Strong Discord 2fa Integration <br>
+
+
 <h4>Important Points</h4>
 - This plugin does not allow cracked players with premium names to join
 <br>
