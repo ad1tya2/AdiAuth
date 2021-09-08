@@ -130,7 +130,8 @@ public class Config {
             Discord.bot_token = discord.getString("bot-token");
             Discord.compulsory_for = discord.getStringList("compulsory-for");
             Discord.enabled = discord.getBoolean("enabled");
-            Discord.compulsory_for_enabled = AdiAuth.instance.getProxy().getPluginManager().getPlugin("LuckPerms") != null
+            Discord.compulsory_for_enabled = Discord.enabled && 
+                    AdiAuth.instance.getProxy().getPluginManager().getPlugin("LuckPerms") != null
                     && Discord.compulsory_for.size() != 0 ;
             Discord.loginButtonChannel = discord.getString("loginButtonChannel");
             Discord.activityStatus = discord.getString("activityStatus");
