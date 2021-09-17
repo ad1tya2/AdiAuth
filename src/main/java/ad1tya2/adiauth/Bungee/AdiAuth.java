@@ -56,6 +56,7 @@ public final class AdiAuth extends Plugin {
         getProxy().getPluginManager().registerCommand(this, new forcechangepass());
         getProxy().getPluginManager().registerCommand(this, new twofactor());
         getProxy().getPluginManager().registerCommand(this, new converter());
+        getProxy().getPluginManager().registerCommand(this, new checkuserdata());
         servers.serversStatusChecker();
 
     }

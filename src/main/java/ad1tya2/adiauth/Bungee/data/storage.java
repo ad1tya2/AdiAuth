@@ -32,6 +32,7 @@ public class storage {
     private static final ConcurrentHashMap<UUID, UserProfile> pMapByPremiumUuid = new ConcurrentHashMap<UUID, UserProfile>();
     private static final ConcurrentHashMap<String, List<UserProfile>> profilesByIp = new ConcurrentHashMap<String, List<UserProfile>>();
     private static final ConcurrentHashMap<String, UserProfile> pMapByDiscord = new ConcurrentHashMap<String, UserProfile>();
+
     public static Integer getAccounts(String ip, AccountType type){
         List<UserProfile> profiles = profilesByIp.get(ip);
         if(profiles == null){
@@ -123,9 +124,22 @@ public class storage {
                 UserProfile user = new UserProfile();
                 user.username = name;
                 user.lastIp = ip;
+                user.lastLogin = System.currentTimeMillis();
                 UserProfile oldUserByName = pMap.get(name);
                 if(oldUserByName == null && getAccounts(ip, AccountType.TOTAL)>=Config.maxTotalAccounts){
                   return null;
+                }
+                if(oldUserByName != null) {
+
+                    if(ip != oldUserByName.lastIp){
+                        oldUserByName.endSession();
+                    }
+                    //Only call api if it has been 5 minutes since lastlogin
+                    if (oldUserByName.lastLogin != null && oldUserByName.lastLogin + 300000L > System.currentTimeMillis()) {
+                        return Optional.of(oldUserByName);
+                    }
+
+                    oldUserByName.lastLogin = System.currentTimeMillis();
                 }
                 Optional<UUID> uuid;
                 if(Config.forceBackupServer){

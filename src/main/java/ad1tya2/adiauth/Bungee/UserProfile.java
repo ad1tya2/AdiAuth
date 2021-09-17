@@ -4,7 +4,12 @@ import ad1tya2.adiauth.Bungee.data.servers;
 import ad1tya2.adiauth.Bungee.events.discord;
 import ad1tya2.adiauth.Bungee.utils.BossBar;
 import ad1tya2.adiauth.Bungee.utils.pluginMessaging;
+import ad1tya2.adiauth.Bungee.utils.tools;
 import ad1tya2.adiauth.PluginMessages;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
@@ -24,6 +29,7 @@ public class UserProfile {
     public String discordId;
     public boolean discordLoginPending = false;
     public Integer twoFactorCode;
+    public Long lastLogin;
     //Full joined is set when a person completely logs into the server for the first time
 
     public long sessionEnd = 1L;
@@ -125,4 +131,22 @@ public class UserProfile {
         twoFactorCode = twoFactorCode == null? (int)(Math.random()*9000)+1000: twoFactorCode;
         return String.valueOf(twoFactorCode);
     }
+
+    public TextComponent getDataFormatted(){
+        String data = "&e________________________________________"+
+                "\n\n&2  Username: &b"+username+
+                "\n&2  DiscordID: &b"+(discordId == null? "": discordId)+
+                "\n&2  UUID: &b"+uuid +
+                "\n&2  PremiumUUID: &b"+(premiumUuid == null? "": premiumUuid.toString());
+        TextComponent component = new TextComponent();
+        component.setText(tools.getColoured(data));
+        TextComponent ipComponent = new TextComponent();
+        ipComponent.setText(tools.getColoured("\n&2  Ip Address: &b"+ lastIp));
+        ipComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, lastIp));
+        ipComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to copy!").create()));
+        component.addExtra(ipComponent);
+        component.addExtra(tools.getColoured("\n&e________________________________________"));
+        return component;
+    }
+
 }

@@ -80,6 +80,7 @@ public class discord {
                         if(event.getComponentId().equals("AdiAuthLogin")){
                             UserProfile profile = storage.getPlayerByDiscord(event.getUser().getId());
                             if(profile == null){
+                                event.getInteraction().reply("Are you sure you need to use this?").setEphemeral(true).queue();
                                 return;
                             }
                             ProxiedPlayer p = ProxyServer.getInstance().getPlayer(profile.username);

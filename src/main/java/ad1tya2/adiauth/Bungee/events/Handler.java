@@ -8,6 +8,7 @@ import ad1tya2.adiauth.Bungee.data.storage;
 import ad1tya2.adiauth.Bungee.utils.pluginMessaging;
 import ad1tya2.adiauth.Bungee.utils.tools;
 import ad1tya2.adiauth.PluginMessages;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.PendingConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -16,13 +17,12 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.connection.InitialHandler;
 import net.md_5.bungee.connection.LoginResult;
 import net.md_5.bungee.event.EventHandler;
-
 import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.logging.Level;
 
 public class Handler implements Listener {
-    @EventHandler(priority = 127)
+    @EventHandler(priority = Byte.MAX_VALUE)
     public void onPreLogin(PreLoginEvent event){
         if(event.isCancelled()){
             return;
@@ -33,6 +33,14 @@ public class Handler implements Listener {
                              @Override
                              public void run() {
                                  PendingConnection conn = event.getConnection();
+                                 ProxiedPlayer player = ProxyServer.getInstance().getPlayer(conn.getName());
+                                 if(player != null && player.isConnected()){
+                                     conn.disconnect(tools.getColoured(
+                                             "&eAnother player with that name is already online!"
+                                     ));
+                                     event.setCancelled(true);
+                                     return;
+                                 }
                                  Optional<UserProfile> optional = storage.getPlayerForLogin(conn.getName(), tools.getIp(conn.getSocketAddress()));
                                  if(optional == null){
                                      conn.disconnect(Config.Messages.tooManyAccounts);
