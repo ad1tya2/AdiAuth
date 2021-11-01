@@ -33,6 +33,11 @@ public class storage {
     private static final ConcurrentHashMap<String, List<UserProfile>> profilesByIp = new ConcurrentHashMap<String, List<UserProfile>>();
     private static final ConcurrentHashMap<String, UserProfile> pMapByDiscord = new ConcurrentHashMap<String, UserProfile>();
 
+
+    public static List<UserProfile> getProfilesByIp(String ip){
+        return profilesByIp.get(ip);
+    }
+
     public static Integer getAccounts(String ip, AccountType type){
         List<UserProfile> profiles = profilesByIp.get(ip);
         if(profiles == null){
@@ -126,6 +131,9 @@ public class storage {
                 user.lastIp = ip;
                 user.lastLogin = System.currentTimeMillis();
                 UserProfile oldUserByName = pMap.get(name);
+
+                Optional<UUID> uuid = null;
+
                 if(oldUserByName == null && getAccounts(ip, AccountType.TOTAL)>=Config.maxTotalAccounts){
                   return null;
                 }
@@ -141,30 +149,37 @@ public class storage {
 
                     oldUserByName.lastLogin = System.currentTimeMillis();
                 }
-                Optional<UUID> uuid;
-                if(Config.forceBackupServer){
-                    uuid = Uuids.getBackupServerUUID(name);
-                }
-                else {
-                    uuid = Uuids.getMojangUUid(name);
-                    if (uuid == null) {
-                        if (Config.backupServerEnabled) {
-                            uuid = getBackupServerUUID(name);
-                            tools.log(Level.WARNING, "&eUsing backup server for " + name);
+
+                if(oldUserByName == null || oldUserByName.isPremium()){
+                    if(Config.forceBackupServer){
+                        uuid = Uuids.getBackupServerUUID(name);
+                    }
+                    else {
+                        uuid = Uuids.getMojangUUid(name);
+                        if (uuid == null) {
+                            if (Config.backupServerEnabled) {
+                                uuid = getBackupServerUUID(name);
+                                tools.log(Level.WARNING, "&eUsing backup server for " + name);
+                            }
+                        }
+                    }
+                    if(uuid == null){
+                        logApiError();
+                        if(oldUserByName == null){
+                            return Optional.empty();
+                        }else {
+                            return Optional.of(oldUserByName);
                         }
                     }
                 }
-                if(uuid == null){
-                    logApiError();
-                    if(oldUserByName == null){
-                        return Optional.empty();
-                    }else {
-                        return Optional.of(oldUserByName);
-                    }
-                }
+
+
+
+
 
                     //Premium
-                    if(uuid.isPresent()) {
+                    if(uuid != null && uuid.isPresent()) {
+
                         if(oldUserByName == null && getAccounts(ip, AccountType.PREMIUM)>=Config.maxPremiumAccounts){
                             return null;
                         }
@@ -174,9 +189,6 @@ public class storage {
                         if (oldPremiumUser == null) {
                             if (oldUserByName != null && !(oldUserByName.isPremium())) {
                                 oldUserByName.lastIp = ip;
-                                if (Config.convertOldCrackedToPremium) {
-                                    oldUserByName.premiumUuid = user.premiumUuid;
-                                }
                                 updatePlayerMemory(oldUserByName);
                                 return Optional.of(oldUserByName);
                             }
@@ -213,20 +225,22 @@ public class storage {
 
                         //If the username of this player has been converted to cracked from premium
                         //i.e If someone had a premium account with this name in the past and has changed his id to something else
-                        try {
-                            if (oldUserByName.isPremium() && oldUserByName.uuid != user.uuid) {
-                                CloseableHttpClient client = HttpClients.createDefault();
-                                HttpGet reqx = new HttpGet("https://api.mojang.com/user/profiles/" + getUndashedUuid(oldUserByName.premiumUuid) + "/names");
-                                CloseableHttpResponse response = client.execute(reqx);
-                                JsonParser parser = new JsonParser();
-                                JsonArray rawUsernames = parser.parse(tools.getString(response.getEntity().getContent())).getAsJsonArray();
-                                oldUserByName.username = rawUsernames.get(rawUsernames.size() - 1).getAsJsonObject().get("name").getAsString();
-                                updatePlayer(oldUserByName);
-                                updatePlayerMemory(user);
-                                response.close();
-                                client.close();
-                            }
-                        }catch (Exception ignored){}
+
+
+//                        try {
+//                            if (oldUserByName.isPremium() && oldUserByName.uuid != user.uuid) {
+//                                CloseableHttpClient client = HttpClients.createDefault();
+//                                HttpGet reqx = new HttpGet("https://api.mojang.com/user/profiles/" + getUndashedUuid(oldUserByName.premiumUuid) + "/names");
+//                                CloseableHttpResponse response = client.execute(reqx);
+//                                JsonParser parser = new JsonParser();
+//                                JsonArray rawUsernames = parser.parse(tools.getString(response.getEntity().getContent())).getAsJsonArray();
+//                                oldUserByName.username = rawUsernames.get(rawUsernames.size() - 1).getAsJsonObject().get("name").getAsString();
+//                                updatePlayer(oldUserByName);
+//                                updatePlayerMemory(user);
+//                                response.close();
+//                                client.close();
+//                            }
+//                        }catch (Exception ignored){}
 
 
                         if (!oldUserByName.lastIp.equals(user.lastIp)) {
@@ -275,6 +289,10 @@ public class storage {
 
     public static UserProfile getPlayerByDiscord(String discordId){
         return pMapByDiscord.get(discordId);
+    }
+
+    public static void removePlayerFromDiscord(String discordId){
+        pMapByDiscord.remove(discordId);
     }
 
     private static void updatePlayerMemory(UserProfile profile){

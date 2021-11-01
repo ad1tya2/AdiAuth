@@ -2,6 +2,7 @@ package ad1tya2.adiauth.Spigot;
 
 import ad1tya2.adiauth.PluginMessages;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.bukkit.potion.PotionEffect;
@@ -65,10 +66,12 @@ public class pluginMsg implements PluginMessageListener{
         if(!frozenPlayers.contains(uuid)) {
             Player p = Bukkit.getPlayer(uuid);
             if(p != null) {
+
                 if (blindness) {
                     p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 1000000, 10));
                 }
                 p.setAllowFlight(true);
+                p.spigot().setCollidesWithEntities(false);
             }
             frozenPlayers.add(uuid);
         }
@@ -83,6 +86,7 @@ public class pluginMsg implements PluginMessageListener{
     }
 
     public static void unfreezePlayer(Player p){
+        p.spigot().setCollidesWithEntities(true);
         frozenPlayers.remove(p.getUniqueId());
         if(blindness) {
             p.removePotionEffect(PotionEffectType.BLINDNESS);

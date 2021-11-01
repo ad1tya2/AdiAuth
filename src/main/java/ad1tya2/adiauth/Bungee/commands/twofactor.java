@@ -51,7 +51,7 @@ public class twofactor extends Command implements TabExecutor {
                 }
             }
         });
-        registerCmd(new Cmd() {
+        Cmd enableCmd = new Cmd() {
             @Override
             public boolean isAdminCmd() {
                 return false;
@@ -75,6 +75,25 @@ public class twofactor extends Command implements TabExecutor {
                 } else {
                     p.sendMessage(discord.getRegisterMsg(profile));
                 }
+            }
+        };
+
+        registerCmd(enableCmd);
+
+        registerCmd(new Cmd() {
+            @Override
+            public boolean isAdminCmd() {
+                return false;
+            }
+
+            @Override
+            public String getSubCommand() {
+                return "enable";
+            }
+
+            @Override
+            public void onCmd(String arg, CommandSender sender) {
+                enableCmd.onCmd(arg, sender);
             }
         });
 
@@ -100,9 +119,10 @@ public class twofactor extends Command implements TabExecutor {
                 if(!profile.is2faRegistered()){
                     p.sendMessage(Config.Messages.loginNotRegistered);
                 } else {
-                    if(discord.isCompulsory(profile)){
+                    if(!profile.isLogged() || discord.isCompulsory(profile)){
                         sender.sendMessage(tools.getColoured("&cCannot disable 2fa!"));
                     } else {
+                        storage.removePlayerFromDiscord(profile.discordId);
                         profile.discordId = null;
                         storage.updatePlayer(profile);
                         discord.removeRoleToGive(profile);
@@ -125,6 +145,13 @@ public class twofactor extends Command implements TabExecutor {
 
             @Override
             public void onCmd(String arg, CommandSender sender) {
+                if(sender instanceof ProxiedPlayer){
+                    ProxiedPlayer p = (ProxiedPlayer) sender;
+                    if(!storage.getPlayerMemory(p.getName()).isLogged()){
+                        sender.sendMessage(ChatColor.RED+"You cannot use this right now!");
+                        return;
+                    }
+                }
                 if(arg == null){
                     sender.sendMessage(ChatColor.RED+"Invalid arguments!");
                     return;
@@ -136,6 +163,7 @@ public class twofactor extends Command implements TabExecutor {
                     sender.sendMessage(ChatColor.YELLOW+"2fa isnt enabled for the player");
                 }
                 else {
+                    storage.removePlayerFromDiscord(profile.discordId);
                     profile.discordId = null;
                     storage.updatePlayer(profile);
                     discord.removeRoleToGive(profile);

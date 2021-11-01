@@ -31,7 +31,7 @@ public class Config {
 
     public static String backupServer, secondAttempt, pluginMsgConf;
 
-    public static boolean forceBackupServer, convertOldCrackedToPremium, backupServerEnabled, secondAttemptEnabled, disconnectOnWrongPass;
+    public static boolean forceBackupServer, backupServerEnabled, secondAttemptEnabled, disconnectOnWrongPass;
     public static class Messages {
         public static String registerError, loginAndRegisterSuccess, alreadyLoggedIn, loginNotRegistered,
                 loginWrongPass, loginError, alreadyRegistered, noServersAvailable, registerMessage,
@@ -100,7 +100,6 @@ public class Config {
             forceBackupServer = config.getBoolean("forceBackupServer");
             backupServer = config.getString("backupServer");
             backupServerEnabled = !backupServer.equals("");
-            convertOldCrackedToPremium = config.getBoolean("convertOldCrackedToPremium");
             maxPremiumAccounts = config.getInt("maxPremiumAccounts");
             maxCrackedAccounts = config.getInt("maxCrackedAccounts");
             maxTotalAccounts = config.getInt("maxTotalAccounts");

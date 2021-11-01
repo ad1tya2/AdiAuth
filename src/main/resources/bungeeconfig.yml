@@ -18,13 +18,6 @@ mysql:
   database: datatomybasetothebase
   host: localhost
 
-# If the name of a cracked account becomes premium, it converts the account as well
-# The uuid will remain cracked when checked inside the server
-# But the player will be automatically logged in as cracked
-# There is a risk factor ofcourse, But the chances are that this only happens when a person with a cracked account buys a new premium account
-# It is less likely that a person buys an account with the same username as a cracked guy
-convertOldCrackedToPremium: true
-
 #The tme to keep a player logged in for in Minutes
 #So that they don't have to login everytime they reconnect
 #Note that the session will be reset when they join from a new ip

@@ -103,7 +103,7 @@ public class UserProfile {
     }
 
     public boolean is2faLoginNeeded(){
-        return discordId != null || discord.isCompulsory(this);
+        return Config.Discord.enabled && ( discordId != null || discord.isCompulsory(this) );
     }
 
     public boolean is2faRegistered(){

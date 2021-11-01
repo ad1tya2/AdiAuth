@@ -17,16 +17,18 @@ import net.luckperms.api.node.NodeType;
 import net.luckperms.api.node.types.InheritanceNode;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import org.apache.hc.core5.concurrent.CompletedFuture;
 
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class discord {
     private static String dmLink, BOTNAME, CHANNELNAME, channelLink;
-    private static ConcurrentHashMap<String, UserProfile> pendingRegistrations = new ConcurrentHashMap<String, UserProfile>();
+    private static final ConcurrentHashMap<String, UserProfile> pendingRegistrations = new ConcurrentHashMap<String, UserProfile>();
     private static JDA client;
     private static Guild mainGuild;
     public static void load(){
@@ -56,10 +58,8 @@ public class discord {
                             if(profile.discordId != null || discordAuthorProfile != null){
                                 profile.discordLoginPending = false;
                                 event.getMessage().reply("You can only link one discord account to one minecraft account.").queue();
-                                pendingRegistrations.remove(code);
                                 return;
                             }
-
                             ProxiedPlayer p = ProxyServer.getInstance().getPlayer(profile.username);
                             if(profile.discordLoginPending && code.equals(String.valueOf(profile.getTwoFactorCode())) && p != null){
                                 profile.loggedInPlayer(p);
@@ -80,7 +80,7 @@ public class discord {
                         if(event.getComponentId().equals("AdiAuthLogin")){
                             UserProfile profile = storage.getPlayerByDiscord(event.getUser().getId());
                             if(profile == null){
-                                event.getInteraction().reply("Are you sure you need to use this?").setEphemeral(true).queue();
+                                event.getInteraction().reply("Are you sure you have 2fa enabled?").setEphemeral(true).queue();
                                 return;
                             }
                             ProxiedPlayer p = ProxyServer.getInstance().getPlayer(profile.username);
@@ -88,7 +88,7 @@ public class discord {
                                 profile.loggedInPlayer(p);
                                 event.getInteraction().reply("Successful login!").setEphemeral(true).queue();
                             } else {
-                                event.getInteraction().reply("Are you sure you need to use this?").setEphemeral(true).queue();
+                                event.getInteraction().reply("Are you sure you need to use this? "+profile.discordLoginPending).setEphemeral(true).queue();
                             }
                         }
                     }
@@ -131,11 +131,11 @@ public class discord {
 
     public static void discordLogin(UserProfile profile, ProxiedPlayer p){
         if(profile.is2faRegistered()){
+            profile.discordLoginPending = true;
             p.sendMessage(getLoginMsg());
         } else {
             p.sendMessage(getRegisterMsg(profile));
         }
-        profile.discordLoginPending = true;
     }
 
     public static boolean isCompulsory(UserProfile profile){
@@ -167,4 +167,5 @@ public class discord {
         pendingRegistrations.put(profile.getTwoFactorCode(), profile);
         return Config.Messages.discordRegisterMessage.replace("CODE", String.valueOf(profile.getTwoFactorCode())).replace("BOTNAME", BOTNAME).replace("THISLINK", dmLink);
     }
+
 }

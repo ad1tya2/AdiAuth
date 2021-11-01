@@ -1,5 +1,6 @@
 package ad1tya2.adiauth.Spigot;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -18,12 +19,15 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.spigotmc.event.entity.EntityMountEvent;
 
+import java.util.Objects;
+
 public class listener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event){
         Player p = event.getPlayer();
         if(isFrozen(p)){
+            p.spigot().setCollidesWithEntities(false);
             if(pluginMsg.blindness){
                  p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 1000000, 10));
             }
@@ -42,8 +46,18 @@ public class listener implements Listener {
 
     //Cancel all events
     @EventHandler
-    public void onMove(PlayerMoveEvent event){
-        cancelIfFreezePlayers(event, event.getPlayer());
+    public void onMove(PlayerMoveEvent moveEvent){
+        Location originalLoc = moveEvent.getFrom();
+        Location newLoc = moveEvent.getTo();
+        if (Objects.nonNull(newLoc) && originalLoc.getX() == newLoc.getX() && originalLoc.getY() == newLoc.getY() && originalLoc.getZ() == newLoc.getX()) {
+            return;
+        }
+        Player p = moveEvent.getPlayer();
+        if(isFrozen(p)) {
+            originalLoc.setYaw(newLoc.getYaw());
+            originalLoc.setPitch(newLoc.getPitch());
+            moveEvent.setTo(originalLoc);
+        }
     }
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event){
