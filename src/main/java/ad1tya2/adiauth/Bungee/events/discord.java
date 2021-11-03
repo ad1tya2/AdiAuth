@@ -4,6 +4,7 @@ import ad1tya2.adiauth.Bungee.Config;
 import ad1tya2.adiauth.Bungee.UserProfile;
 import ad1tya2.adiauth.Bungee.data.storage;
 import ad1tya2.adiauth.Bungee.utils.tools;
+import com.google.common.collect.Sets;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
@@ -19,8 +20,7 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.apache.hc.core5.concurrent.CompletedFuture;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
@@ -30,6 +30,8 @@ public class discord {
     private static String dmLink, BOTNAME, CHANNELNAME, channelLink;
     private static final ConcurrentHashMap<String, UserProfile> pendingRegistrations = new ConcurrentHashMap<String, UserProfile>();
     private static JDA client;
+    private static Set<String> discordLoginPending = Sets.newConcurrentHashSet();
+
     private static Guild mainGuild;
     public static void load(){
         try {
@@ -56,12 +58,12 @@ public class discord {
                             }
 
                             if(profile.discordId != null || discordAuthorProfile != null){
-                                profile.discordLoginPending = false;
+                                removeDiscordLoginPending(profile.username);
                                 event.getMessage().reply("You can only link one discord account to one minecraft account.").queue();
                                 return;
                             }
                             ProxiedPlayer p = ProxyServer.getInstance().getPlayer(profile.username);
-                            if(profile.discordLoginPending && code.equals(String.valueOf(profile.getTwoFactorCode())) && p != null){
+                            if(isDiscordLoginPending(profile.username) && code.equals(String.valueOf(profile.getTwoFactorCode())) && p != null){
                                 profile.loggedInPlayer(p);
                                 p.sendMessage(tools.getColoured("&22fa Successfully enabled!"));
                                 profile.discordId = event.getAuthor().getId();
@@ -84,11 +86,11 @@ public class discord {
                                 return;
                             }
                             ProxiedPlayer p = ProxyServer.getInstance().getPlayer(profile.username);
-                            if(profile.discordLoginPending && p != null){
+                            if(isDiscordLoginPending(profile.username) && p != null){
                                 profile.loggedInPlayer(p);
                                 event.getInteraction().reply("Successful login!").setEphemeral(true).queue();
                             } else {
-                                event.getInteraction().reply("Are you sure you need to use this? "+profile.discordLoginPending).setEphemeral(true).queue();
+                                event.getInteraction().reply("Are you sure you need to use this? "+isDiscordLoginPending(profile.username)+ " "+profile.username).setEphemeral(true).queue();
                             }
                         }
                     }
@@ -131,7 +133,7 @@ public class discord {
 
     public static void discordLogin(UserProfile profile, ProxiedPlayer p){
         if(profile.is2faRegistered()){
-            profile.discordLoginPending = true;
+            setDiscordLoginPending(profile.username);
             p.sendMessage(getLoginMsg());
         } else {
             p.sendMessage(getRegisterMsg(profile));
@@ -163,9 +165,21 @@ public class discord {
     }
 
     public static String getRegisterMsg(UserProfile profile){
-        profile.discordLoginPending = true;
+        setDiscordLoginPending(profile.username);
         pendingRegistrations.put(profile.getTwoFactorCode(), profile);
         return Config.Messages.discordRegisterMessage.replace("CODE", String.valueOf(profile.getTwoFactorCode())).replace("BOTNAME", BOTNAME).replace("THISLINK", dmLink);
+    }
+
+    public static void setDiscordLoginPending(String username){
+            discordLoginPending.add(username);
+    }
+
+    public static void removeDiscordLoginPending(String username){
+        discordLoginPending.remove(username);
+    }
+
+    public static boolean isDiscordLoginPending(String username){
+        return discordLoginPending.contains(username);
     }
 
 }

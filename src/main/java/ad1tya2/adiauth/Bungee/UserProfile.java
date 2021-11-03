@@ -27,7 +27,6 @@ public class UserProfile {
     private ScheduledFuture<?> titleTask;
     public boolean fullJoined = false;
     public String discordId;
-    public boolean discordLoginPending = false;
     public Integer twoFactorCode;
     public Long lastLogin;
     //Full joined is set when a person completely logs into the server for the first time
@@ -46,7 +45,7 @@ public class UserProfile {
             titleTask = null;
         }
         sessionEnd = System.currentTimeMillis() + Config.SessionTime*60000L;
-        discordLoginPending = false;
+        discord.removeDiscordLoginPending(username);
         twoFactorCode = null;
     }
 
@@ -96,7 +95,7 @@ public class UserProfile {
                             String.valueOf((int) timeLeft[0])), timeLeft[0] /maxTime, p);
                 } else {
                     p.disconnect(Config.Messages.authTimeExceeded);
-                    discordLoginPending = false;
+                    discord.removeDiscordLoginPending(username);
                 }
             }
         }, 2, 1, TimeUnit.SECONDS);

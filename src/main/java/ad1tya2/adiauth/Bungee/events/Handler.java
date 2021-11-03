@@ -8,7 +8,7 @@ import ad1tya2.adiauth.Bungee.data.storage;
 import ad1tya2.adiauth.Bungee.utils.pluginMessaging;
 import ad1tya2.adiauth.Bungee.utils.tools;
 import ad1tya2.adiauth.PluginMessages;
-import net.dv8tion.jda.api.events.DisconnectEvent;
+
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.PendingConnection;
@@ -64,7 +64,6 @@ public class Handler implements Listener {
                                      return;
                                  }
                                  profile.startLoginProcess();
-                                 conn.setUniqueId(profile.uuid);
                                  conn.setOnlineMode(profile.isPremium());
                                  event.completeIntent(AdiAuth.instance);
                          }
@@ -149,7 +148,7 @@ public class Handler implements Listener {
 
     @EventHandler
     public void onDisconnect(PlayerDisconnectEvent event){
-
+        discord.removeDiscordLoginPending(event.getPlayer().getName());
     }
 
 }
