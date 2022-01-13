@@ -55,7 +55,6 @@ whitelistedCommands:
   - /register
   - /reg
   - /login
-  - /l
   - /2fa
 
 #The maximum number of premium accounts that can join from a single ip
