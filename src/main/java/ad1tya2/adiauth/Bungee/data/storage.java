@@ -79,6 +79,19 @@ public class storage {
         }
         profilesByIp.put(profile.lastIp, profiles);
     }
+
+    public static void removeAccountFromIpList(UserProfile profile){
+        if(profile.lastIp == null){
+            return;
+        }
+        List<UserProfile> profiles = profilesByIp.get(profile.lastIp);
+        if(profiles == null){
+            profiles = new ArrayList<UserProfile>();
+        }
+        profiles.remove(profile);
+        profilesByIp.put(profile.lastIp, profiles);
+    }
+
     public static void load(){
         try {
             tools.log("&eLoading Players...");
@@ -285,6 +298,32 @@ public class storage {
     public static void updatePlayer(UserProfile player){
         updatePlayerMemory(player);
         asyncUserProfileUpdate(player);
+    }
+
+    public static void deletePlayer(UserProfile profile){
+        if(profile.discordId!=null)
+          removePlayerFromDiscord(profile.discordId);
+
+        pMapByPremiumUuid.remove(profile.premiumUuid);
+        pMap.remove(profile.username);
+        removeAccountFromIpList(profile);
+
+        AdiAuth.instance.getProxy().getScheduler().runAsync(AdiAuth.instance, new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Connection conn = database.getConnection();
+                    PreparedStatement stmt = conn.prepareStatement(
+                            "DELETE FROM auth_users WHERE uuid=?");
+                    stmt.setString(1, profile.uuid.toString());
+                    stmt.executeUpdate();
+                    stmt.close();
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public static UserProfile getPlayerByDiscord(String discordId){
