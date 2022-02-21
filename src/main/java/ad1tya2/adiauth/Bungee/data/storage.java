@@ -304,7 +304,9 @@ public class storage {
         if(profile.discordId!=null)
           removePlayerFromDiscord(profile.discordId);
 
-        pMapByPremiumUuid.remove(profile.premiumUuid);
+        if(profile.isPremium())
+          pMapByPremiumUuid.remove(profile.premiumUuid);
+
         pMap.remove(profile.username);
         removeAccountFromIpList(profile);
 
